@@ -1,7 +1,7 @@
 name: PR Bot
 
-# pull_request_target runs with base-repo token (write access)
-# even for fork PRs. We never checkout or execute untrusted fork code.
+# pull_request_target runs with base-repo token (write access),
+# even for fork PRs. We never checkout untrusted fork code here.
 on:
   pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
@@ -33,20 +33,19 @@ jobs:
         with:
           configuration-path: .github/auto_assign.yml
 
-  # ── PR Summary Comment (on open only) ───────────────────────────────────────
-  # Safe: checks out base ref only — no fork code is executed.
-  # Changed files are fetched via GitHub API using head SHA.
+  # ── PR Summary Comment ──────────────────────────────────────────────────────
   comment:
     name: PR Summary Comment
     runs-on: ubuntu-latest
     if: github.event.action == 'opened'
     steps:
+      # Safe: fetch-depth 0 on base ref only — no fork code executed
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.base.ref }}
           fetch-depth: 0
 
-      - name: Get changed files
+      - name: Get changed files via API
         id: changed
         uses: tj-actions/changed-files@v46
         with:
@@ -75,9 +74,8 @@ jobs:
             | Item | Value |
             |------|-------|
             | Branch | `${{ github.event.pull_request.head.ref }}` |
-            | Author | @${{ github.event.pull_request.user.login }} |
             | Changed crates | `${{ steps.crates.outputs.list }}` |
             | Files changed | ${{ steps.changed.outputs.all_changed_files_count }} |
 
-            **Blocking checks:** DCO · fmt · clippy · deny · unused-deps · build · doc · msrv · bench-check
-            **Non-blocking:** semver · coverage · miri · cross (push only)
+            CI will run: **build**, **test**, **clippy**, **fmt**, **cargo-deny**, **DCO**, **semver**.
+            Reviewer assigned from CODEOWNERS.
