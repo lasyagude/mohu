@@ -1,14 +1,18 @@
 name: PR Bot
 
+# pull_request_target runs with base-repo token (write access)
+# even for fork PRs. We never checkout or execute untrusted fork code.
 on:
-  pull_request:
+  pull_request_target:
     types: [opened, synchronize, reopened, ready_for_review]
 
 permissions:
   contents: read
   pull-requests: write
+  issues: write
 
 jobs:
+  # ── Auto Label ──────────────────────────────────────────────────────────────
   label:
     name: Auto Label
     runs-on: ubuntu-latest
@@ -19,16 +23,19 @@ jobs:
           configuration-path: .github/labeler.yml
           sync-labels: true
 
+  # ── Auto Assign Reviewer ────────────────────────────────────────────────────
   assign-reviewer:
     name: Auto Assign Reviewer
     runs-on: ubuntu-latest
     if: github.event.pull_request.draft == false
     steps:
-      - name: Assign reviewer from CODEOWNERS
-        uses: kentaro-m/auto-assign-action@v2.0.0
+      - uses: kentaro-m/auto-assign-action@v2.0.0
         with:
           configuration-path: .github/auto_assign.yml
 
+  # ── PR Summary Comment (on open only) ───────────────────────────────────────
+  # Safe: checks out base ref only — no fork code is executed.
+  # Changed files are fetched via GitHub API using head SHA.
   comment:
     name: PR Summary Comment
     runs-on: ubuntu-latest
@@ -36,22 +43,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.base.ref }}
           fetch-depth: 0
 
       - name: Get changed files
         id: changed
         uses: tj-actions/changed-files@v46
         with:
-          separator: "\n"
+          base_sha: ${{ github.event.pull_request.base.sha }}
+          sha: ${{ github.event.pull_request.head.sha }}
 
-      - name: Count changed crates
+      - name: Detect changed crates
         id: crates
         run: |
           crates=$(echo "${{ steps.changed.outputs.all_changed_files }}" \
-            | grep -oP 'crates/[^/]+' | sort -u | tr '\n' ', ' | sed 's/,$//')
+            | tr ' ' '\n' \
+            | grep -oP 'crates/[^/]+' \
+            | sort -u \
+            | tr '\n' ', ' \
+            | sed 's/,$//')
           echo "list=${crates:-none}" >> "$GITHUB_OUTPUT"
 
-      - name: Post PR summary comment
+      - name: Post summary comment
         uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -61,9 +74,10 @@ jobs:
 
             | Item | Value |
             |------|-------|
-            | Branch | `${{ github.head_ref }}` |
+            | Branch | `${{ github.event.pull_request.head.ref }}` |
+            | Author | @${{ github.event.pull_request.user.login }} |
             | Changed crates | `${{ steps.crates.outputs.list }}` |
             | Files changed | ${{ steps.changed.outputs.all_changed_files_count }} |
 
-            CI will run: **build**, **test**, **clippy**, **fmt**, **cargo-deny**.
-            Reviewer assigned from CODEOWNERS (`@mohu-org/core`).
+            **Blocking checks:** DCO · fmt · clippy · deny · unused-deps · build · doc · msrv · bench-check
+            **Non-blocking:** semver · coverage · miri · cross (push only)
