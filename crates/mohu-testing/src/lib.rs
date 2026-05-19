@@ -7,8 +7,8 @@
 ///
 /// | Module        | Purpose                                               |
 /// |---------------|-------------------------------------------------------|
-/// | [`assert`]    | `assert_array_eq!`, `assert_allclose!`, numeric checks|
-/// | [`gen`]       | `proptest` strategies: random arrays of any dtype     |
+/// | [`mod@assert`]    | `assert_array_eq!`, `assert_allclose!`, numeric checks|
+/// | [`strategies`]       | `proptest` strategies: random arrays of any dtype     |
 /// | [`fixtures`]  | pre-built arrays used across mohu's own test suites   |
 /// | [`approx`]    | element-wise approximate equality with ULP tolerance  |
 /// | [`dtype`]     | dtype-parameterised test helpers                      |
@@ -24,7 +24,7 @@
 /// # Property testing
 ///
 /// ```rust,ignore
-/// use mohu_testing::gen::array_f32;
+/// use mohu_testing::strategies::array_f32;
 /// proptest! {
 ///     #[test]
 ///     fn add_commutative(a in array_f32([4, 4]), b in array_f32([4, 4])) {
