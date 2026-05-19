@@ -21,4 +21,7 @@ unknown-git      = "deny"
 allow-registry   = ["https://github.com/rust-lang/crates.io-index"]
 
 [advisories]
-ignore = []
+ignore = [
+    # pyo3 advisory; only relevant when mohu-py is activated (currently disabled)
+    "RUSTSEC-2025-0020",
+]
