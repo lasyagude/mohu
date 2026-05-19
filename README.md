@@ -1,18 +1,21 @@
 # mohu
 
+[![CI](https://github.com/mohu-org/mohu/actions/workflows/ci.yml/badge.svg)](https://github.com/mohu-org/mohu/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Rust-powered arrays for Python. Fast, parallel, and built for the future.
 
 mohu is an early-stage NumPy replacement with its core written in Rust. The goal is simple — take everything Python's scientific stack does and do it without the bottlenecks that have been accepted for decades.
 
 No GIL. No single-threaded ops. No object overhead. Just arrays.
 
-## why
+## Why
 
 NumPy is written in C and hasn't fundamentally changed in 20 years. It's single-threaded by default, its string arrays are an afterthought, and parallelism requires reaching for other tools. The Python data ecosystem deserves a better foundation.
 
 Polars proved you can rewrite the data layer in Rust and win. mohu is that same bet, one layer down.
 
-## what's coming
+## What's Coming
 
 - N-dimensional arrays with a NumPy-compatible API
 - Parallel operations by default via Rayon
@@ -22,17 +25,19 @@ Polars proved you can rewrite the data layer in Rust and win. mohu is that same 
 - SIMD-accelerated math ops
 - Memory layouts NumPy can't express
 
-## status
+## Status
 
-Early. The foundation is being laid. If you believe the Python numerical stack deserves a rewrite, watch this repo or contribute.
+Early. The foundation is being laid. If you believe the Python numerical stack deserves a rewrite, watch this repo or contribute. 
 
-## built with
+Want to help? Check out our [Contributing Guidelines](CONTRIBUTING.md) to get started.
+
+## Built With
 
 - [Rust](https://rust-lang.org)
 - [PyO3](https://github.com/PyO3/pyo3) — Python bindings
 - [arrow-rs](https://github.com/apache/arrow-rs) — columnar memory format
 - [Rayon](https://github.com/rayon-rs/rayon) — data parallelism
 
-## license
+## License
 
 MIT
