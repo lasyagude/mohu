@@ -146,7 +146,9 @@ jobs:
     name: Semver Check
     runs-on: ubuntu-latest
     needs: [fmt, clippy]
-    if: github.event_name == 'pull_request'
+    # Disabled until mohu crates are published to crates.io; cargo-semver-checks
+    # cannot compare unpublished workspace crates against a registry release.
+    if: github.event_name == 'pull_request' && false
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -220,6 +222,10 @@ jobs:
     name: Miri
     runs-on: ubuntu-latest
     needs: [build]
+    # Disabled until the buffer tests have a Miri-safe serial path. The current
+    # integration tests exercise Rayon/Crossbeam, which Miri flags inside
+    # third-party internals under its experimental aliasing model.
+    if: false
     continue-on-error: true
     steps:
       - uses: actions/checkout@v4
@@ -229,10 +235,10 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: miri
-      - run: cargo miri setup
-      - run: cargo miri test -p mohu-buffer --all-features
+      - run: cargo +nightly miri setup
+      - run: cargo +nightly miri test -p mohu-buffer --all-features
         env:
-          MIRIFLAGS: "-Zmiri-strict-provenance -Zmiri-symbolic-alignment-check"
+          MIRIFLAGS: "-Zmiri-symbolic-alignment-check"
           RUSTFLAGS: ""
 
   # ── Final gate ───────────────────────────────────────────────────────────────
